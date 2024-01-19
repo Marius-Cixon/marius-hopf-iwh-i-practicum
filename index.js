@@ -1,71 +1,83 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
+import * as dotenv from 'dotenv';
+dotenv.config({path: '.env'});
+import * as hubspot from '@hubspot/api-client';
+
 
 app.set('view engine', 'pug');
 app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// * Please DO NOT INCLUDE the private app access token in your repo. Don't do this practicum in your normal account.
-const PRIVATE_APP_ACCESS = '';
+const accessToken = process.env.ACCESS_TOKEN;
+const hubspotClient = new hubspot.Client({ accessToken: accessToken });
 
-// TODO: ROUTE 1 - Create a new app.get route for the homepage to call your custom object data. Pass this data along to the front-end and create a new pug template in the views folder.
+const objectType = "pokemons";
+const limit = 100;
+let after = undefined;
+const pokemonProperties = ["nature", "type", "name"];
+const propertiesWithHistory = undefined;
+const associations = undefined;
+const archived = false;
 
-// * Code for Route 1 goes here
+//function to create a new hubspot crm object (pokemon)
+async function createPokemon (formData){
 
-// TODO: ROUTE 2 - Create a new app.get route for the form to create or update new custom object data. Send this data along in the next route.
-
-// * Code for Route 2 goes here
-
-// TODO: ROUTE 3 - Create a new app.post route for the custom objects form to create or update your custom object data. Once executed, redirect the user to the homepage.
-
-// * Code for Route 3 goes here
-
-/** 
-* * This is sample code to give you a reference for how you should structure your calls. 
-
-* * App.get sample
-app.get('/contacts', async (req, res) => {
-    const contacts = 'https://api.hubspot.com/crm/v3/objects/contacts';
-    const headers = {
-        Authorization: `Bearer ${PRIVATE_APP_ACCESS}`,
-        'Content-Type': 'application/json'
-    }
-    try {
-        const resp = await axios.get(contacts, { headers });
-        const data = resp.data.results;
-        res.render('contacts', { title: 'Contacts | HubSpot APIs', data });      
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-* * App.post sample
-app.post('/update', async (req, res) => {
-    const update = {
-        properties: {
-            "favorite_book": req.body.newVal
-        }
-    }
-
-    const email = req.query.email;
-    const updateContact = `https://api.hubapi.com/crm/v3/objects/contacts/${email}?idProperty=email`;
-    const headers = {
-        Authorization: `Bearer ${PRIVATE_APP_ACCESS}`,
-        'Content-Type': 'application/json'
+    //properties from POST
+    const properties = {
+        "name": formData.name,
+        "type": formData.type,
+        "nature": formData.nature
     };
 
-    try { 
-        await axios.patch(updateContact, update, { headers } );
-        res.redirect('back');
-    } catch(err) {
-        console.error(err);
+    console.log("Posted properties are: ", properties);
+
+    const SimplePublicObjectInputForCreate = { associations, properties};
+
+    console.log("Creating Pokemon in Hubspot now!");
+
+    try {
+        const apiResponse = await hubspotClient.crm.objects.basicApi.create(objectType, SimplePublicObjectInputForCreate);
+        console.log(JSON.stringify(apiResponse, null, 2));
+    } catch (e) {
+        e.message === 'HTTP request failed'
+            ? console.error(JSON.stringify(e.response, null, 2))
+            : console.error(e)
     }
+}
 
+app.get("/", async (req, res) => {
+
+    console.log("Listing your Pokemons");
+
+    try {
+        const apiResponse = await hubspotClient.crm.objects.basicApi.getPage(
+            objectType,
+            limit,
+            after,
+            pokemonProperties,
+            propertiesWithHistory,
+            associations,
+            archived);
+        console.log(JSON.stringify(apiResponse, null, 2));
+    } catch (e) {
+        e.message === 'HTTP request failed'
+            ? console.error(JSON.stringify(e.response, null, 2))
+            : console.error(e)
+    }
 });
-*/
 
+app.get("/update-cobj", async (req, res) => {
+    const pageTitle = "Update Custom Object Form | Integrating With HubSpot | Practicum";
+    res.render('updates', { pageTitle });
+});
+
+app.post("/update-cobj", async (req, res) => {
+    await createPokemon(req.body);
+    res.redirect('/');
+});
 
 // * Localhost
 app.listen(3000, () => console.log('Listening on http://localhost:3000'));
