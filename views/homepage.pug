@@ -1,0 +1,22 @@
+html
+    head
+        title= pageTitle
+    body
+        h1= pageTitle
+
+        // Link to add to the table
+        a(href="/update-cobj") Add to this table
+
+        // Pokemon table
+        table
+            thead
+                tr
+                    th name
+                    th type
+                    th nature
+            tbody
+                - for (const pokemon of pokemons)
+                tr
+                    td= pokemon.customProperty1
+                    td= pokemon.customProperty2
+                    td= pokemon.customProperty3

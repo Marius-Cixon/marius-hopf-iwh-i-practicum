@@ -50,7 +50,8 @@ async function createPokemon (formData){
 
 app.get("/", async (req, res) => {
 
-    console.log("Listing your Pokemons");
+    const pageTitle = 'Homepage';
+    console.log("Reading your Pokemons");
 
     try {
         const apiResponse = await hubspotClient.crm.objects.basicApi.getPage(
@@ -62,6 +63,19 @@ app.get("/", async (req, res) => {
             associations,
             archived);
         console.log(JSON.stringify(apiResponse, null, 2));
+
+        console.log("Listing your Pokemons");
+
+        const pokemons = [
+            {
+                name: apiResponse.results.properties.name,
+                type: apiResponse.results.properties.type,
+                nature: apiResponse.results.properties.name
+            },
+        ]
+
+        res.render('homepage', { pageTitle, pokemons });
+
     } catch (e) {
         e.message === 'HTTP request failed'
             ? console.error(JSON.stringify(e.response, null, 2))
