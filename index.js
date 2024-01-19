@@ -1,13 +1,13 @@
 const express = require('express');
-const axios = require('axios');
+const dotenv = require('dotenv');
+dotenv.config({ path: '.env' });
+const hubspot = require('@hubspot/api-client');
+
 const app = express();
-import * as dotenv from 'dotenv';
-dotenv.config({path: '.env'});
-import * as hubspot from '@hubspot/api-client';
 
-
-app.set('view engine', 'pug');
-app.use(express.static(__dirname + '/public'));
+app.set("view engine", "pug");
+app.set("views", "./views");
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -50,11 +50,12 @@ async function createPokemon (formData){
 
 app.get("/", async (req, res) => {
 
-    const pageTitle = 'Homepage';
+    const pageTitle = "Homepage";
+    const tableName = "Pokemon Table"
     console.log("Reading your Pokemons");
 
     try {
-        const apiResponse = await hubspotClient.crm.objects.basicApi.getPage(
+        const pokemonResponse = await hubspotClient.crm.objects.basicApi.getPage(
             objectType,
             limit,
             after,
@@ -62,19 +63,11 @@ app.get("/", async (req, res) => {
             propertiesWithHistory,
             associations,
             archived);
-        console.log(JSON.stringify(apiResponse, null, 2));
+        console.log(JSON.stringify(pokemonResponse, null, 2));
 
-        console.log("Listing your Pokemons");
+        const pokemons = pokemonResponse.results;
 
-        const pokemons = [
-            {
-                name: apiResponse.results.properties.name,
-                type: apiResponse.results.properties.type,
-                nature: apiResponse.results.properties.name
-            },
-        ]
-
-        res.render('homepage', { pageTitle, pokemons });
+        res.render('homepage', { pageTitle, tableName, pokemons });
 
     } catch (e) {
         e.message === 'HTTP request failed'
@@ -84,7 +77,7 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/update-cobj", async (req, res) => {
-    const pageTitle = "Update Custom Object Form | Integrating With HubSpot | Practicum";
+    const pageTitle = "Create a new Pokemon in Hubspot | Integrating With HubSpot | Practicum";
     res.render('updates', { pageTitle });
 });
 

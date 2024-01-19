@@ -1,11 +1,11 @@
 html
     head
         title= pageTitle
+        link(rel="stylesheet" href="/css/style.css")
     body
-        h1= pageTitle
+        h1= tableName
 
-        // Link to add to the table
-        a(href="/update-cobj") Add to this table
+        a.update-link(href="/update-cobj") Add to this table
 
         // Pokemon table
         table
@@ -15,8 +15,8 @@ html
                     th type
                     th nature
             tbody
-                - for (const pokemon of pokemons)
-                tr
-                    td= pokemon.customProperty1
-                    td= pokemon.customProperty2
-                    td= pokemon.customProperty3
+                each pokemon in pokemons
+                    tr
+                        td #{pokemon.properties.name}
+                        td #{pokemon.properties.type}
+                        td #{pokemon.properties.nature}

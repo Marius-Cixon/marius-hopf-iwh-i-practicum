@@ -2,11 +2,10 @@ doctype html
 html
     head
         title= pageTitle
+        link(rel="stylesheet" href="/css/style.css")
     body
-        h1= pageTitle
-        p Pokemon
-        a(href="/") Return to the homepage
 
+        h1= pageTitle
         // HubSpot CRM Record Creation
         form(action="/update-cobj", method="POST")
             label(for="name") Name:
@@ -18,5 +17,7 @@ html
             label(for="nature")  nature:
             input(type="text", name="nature", id="nature")
 
-            button(type="submit") Create HubSpot Record
+            button(type="submit") Create Pokemon
+
+    a.update-link(href="/") Return to the homepage
 
